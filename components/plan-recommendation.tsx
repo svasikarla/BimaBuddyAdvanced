@@ -12,7 +12,7 @@ import { VisualRiskCalculator } from "./policy-bare-open/visual-risk-calculator"
 import { RedFlagHighlights } from "./policy-bare-open/red-flag-highlights"
 import { VisualClauseMap } from "./policy-bare-open/visual-clause-map"
 import { InsuranceRadarChart, type InsuranceParameter } from "./policy-bare-open/insurance-radar-chart"
-import { getTopInsurancePlans, getPolicyFeatures } from "@/lib/supabase"
+import { getTopInsurancePlans, getPolicyFeatures, supabase } from "@/lib/supabase"
 
 type FormData = {
   age: string
@@ -59,6 +59,10 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
   const [loading, setLoading] = useState(true)
   const [recommendedPlans, setRecommendedPlans] = useState<InsurancePlan[]>([])
   const [policyFeatures, setPolicyFeatures] = useState<Record<string, PolicyFeature[]>>({})
+  const [allPolicies, setAllPolicies] = useState<InsurancePlan[]>([])
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string>("")
+  const [selectedPolicyRedFlags, setSelectedPolicyRedFlags] = useState<any>({})
+  const [redFlagsLoading, setRedFlagsLoading] = useState(false)
 
   // Fetch plans from Supabase
   useEffect(() => {
@@ -154,8 +158,221 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
     }
     
     fetchPlans()
-  }, [formData])
-
+    
+    // Fetch all policies for the red flags tab
+    async function fetchAllPolicies() {
+      try {
+        const { data, error } = await supabase
+          .from('insurance_policy_score_vw')
+          .select(`
+            policy_id,
+            company_name,
+            policy_name,
+            claim_settlement_ratio,
+            network_hospitals_count,
+            annual_premium,
+            co_payment,
+            pre_hospitalization_days,
+            post_hospitalization_days,
+            total_score,
+            type_of_plan
+          `)
+          .order('company_name', { ascending: true })
+          .order('policy_name', { ascending: true });
+          
+        if (error) {
+          console.error("Error fetching all policies:", error);
+          return;
+        }
+        
+        if (data?.length) {
+          setAllPolicies(data);
+          // Set the first policy as default selected
+          if (data.length > 0 && !selectedPolicyId) {
+            setSelectedPolicyId(data[0].policy_id);
+          }
+        }
+      } catch (err) {
+        console.error("Unexpected error in fetchAllPolicies", err);
+      }
+    }
+    
+    fetchAllPolicies();
+  }, [])
+  
+  // Function to fetch red flags for a specific policy
+  const fetchPolicyRedFlags = async (policyId: string) => {
+    if (!policyId) return;
+    
+    try {
+      setRedFlagsLoading(true);
+      
+      // Fetch policy features
+      const features = await getPolicyFeatures(policyId);
+      
+      // Get the policy details
+      const policy = allPolicies.find(p => p.policy_id === policyId);
+      
+      if (!policy) {
+        console.error("Selected policy not found");
+        setRedFlagsLoading(false);
+        return;
+      }
+      
+      // Transform policy data to the format expected by RedFlagHighlights
+      const policyData = transformPolicyToRedFlagFormat(policy, features);
+      setSelectedPolicyRedFlags(policyData);
+      
+      setRedFlagsLoading(false);
+    } catch (err) {
+      console.error("Error fetching policy red flags:", err);
+      setRedFlagsLoading(false);
+    }
+  };
+  
+  // Function to transform policy data to the format expected by RedFlagHighlights
+  const transformPolicyToRedFlagFormat = (policy: InsurancePlan, features: PolicyFeature[]) => {
+    // Transform key features into policy clauses
+    type PolicyClause = {
+      id: string;
+      title: string;
+      category: string;
+      description: string;
+      isRedFlag: boolean;
+      implication: string;
+    }
+    
+    const clauses: PolicyClause[] = [];
+    
+    // Map features to clauses with appropriate categories and red flags
+    if (features && Array.isArray(features)) {
+      features.forEach((feature, index) => {
+        // Determine clause category and details based on feature text
+        let category = "coverage";
+        let isRedFlag = false;
+        let description = feature.description;
+        let implication = "";
+        
+        // Analyze feature text to categorize and determine if it's a red flag
+        const featureText = feature.description.toLowerCase();
+        
+        if (featureText.includes("pre-existing")) {
+          category = "coverage";
+          isRedFlag = true;
+          description = featureText.includes("after") ? feature.description : `${feature.description} after waiting period`;
+          implication = "You'll need to wait before pre-existing conditions are covered.";
+        } else if (featureText.includes("day care")) {
+          category = "treatment";
+          isRedFlag = false;
+          implication = "Minor procedures that don't require 24-hour hospitalization are covered.";
+        } else if (featureText.includes("hospitalization")) {
+          category = "hospitalization";
+          isRedFlag = false;
+          implication = "Your hospital stay expenses will be covered as per policy terms.";
+        } else if (featureText.includes("check-up")) {
+          category = "bonus";
+          isRedFlag = false;
+          implication = "You can get preventive health check-ups at no additional cost.";
+        } else if (featureText.includes("bonus")) {
+          category = "bonus";
+          isRedFlag = false;
+          implication = "Your coverage amount increases if you don't make claims.";
+        } else if (featureText.includes("ambulance")) {
+          category = "transportation";
+          isRedFlag = false;
+          implication = "Emergency ambulance charges will be covered up to a certain limit.";
+        } else if (featureText.includes("co-payment") || featureText.includes("copay")) {
+          category = "payment";
+          isRedFlag = true;
+          implication = "You'll need to pay a percentage of the claim amount from your pocket.";
+        } else if (featureText.includes("room")) {
+          category = "hospitalization";
+          isRedFlag = true;
+          implication = "If you choose a higher category room, you'll need to pay the difference.";
+        } else if (featureText.includes("critical")) {
+          category = "treatment";
+          isRedFlag = false;
+          implication = "Specified critical illnesses are covered under this policy.";
+        } else if (featureText.includes("maternity")) {
+          category = "treatment";
+          isRedFlag = false;
+          implication = "Expenses related to childbirth and maternity care are covered.";
+        } else if (featureText.includes("exclusion") || featureText.includes("not covered") || featureText.includes("excluded")) {
+          category = "coverage";
+          isRedFlag = true;
+          implication = "These conditions or treatments are not covered by the policy.";
+        } else if (featureText.includes("waiting period") || featureText.includes("wait")) {
+          category = "coverage";
+          isRedFlag = true;
+          implication = "You'll need to wait before these conditions are covered.";
+        } else if (featureText.includes("limit") || featureText.includes("cap") || featureText.includes("maximum")) {
+          category = "coverage";
+          isRedFlag = true;
+          implication = "There's a limit on how much the insurer will pay for these expenses.";
+        }
+        
+        // Create the clause object
+        clauses.push({
+          id: (index + 1).toString(),
+          title: feature.feature_type || feature.description.substring(0, 30),
+          description: description,
+          implication: implication || "This feature affects your coverage as described.",
+          category: category,
+          isRedFlag: isRedFlag || feature.is_optional,
+        });
+      });
+    }
+    
+    // Add standard clauses based on policy data
+    if (policy.co_payment > 0) {
+      clauses.push({
+        id: (clauses.length + 1).toString(),
+        title: "Co-payment",
+        description: `${policy.co_payment}% co-payment required`,
+        implication: `You'll need to pay ${policy.co_payment}% of the claim amount from your pocket.`,
+        category: "payment",
+        isRedFlag: true,
+      });
+    }
+    
+    if (policy.pre_hospitalization_days < 60) {
+      clauses.push({
+        id: (clauses.length + 1).toString(),
+        title: "Pre-hospitalization Coverage",
+        description: `Only ${policy.pre_hospitalization_days} days of pre-hospitalization expenses covered`,
+        implication: "Medical expenses incurred before hospitalization are covered only for a limited period.",
+        category: "coverage",
+        isRedFlag: true,
+      });
+    }
+    
+    if (policy.post_hospitalization_days < 90) {
+      clauses.push({
+        id: (clauses.length + 1).toString(),
+        title: "Post-hospitalization Coverage",
+        description: `Only ${policy.post_hospitalization_days} days of post-hospitalization expenses covered`,
+        implication: "Medical expenses incurred after discharge are covered only for a limited period.",
+        category: "coverage",
+        isRedFlag: true,
+      });
+    }
+    
+    return {
+      policyName: policy.policy_name,
+      provider: policy.company_name,
+      premium: `₹${policy.annual_premium.toLocaleString('en-IN')}/year`,
+      sumInsured: "₹5,00,000", // This is a placeholder as the actual sum insured isn't in the data
+      clauses: clauses,
+    };
+  };
+  
+  // Effect to fetch red flags when selected policy changes
+  useEffect(() => {
+    if (selectedPolicyId) {
+      fetchPolicyRedFlags(selectedPolicyId);
+    }
+  }, [selectedPolicyId]);
+  
   // Transform DB plan data to the format expected by the UI
   const transformPlanToUIFormat = (plan: InsurancePlan, index: number) => {
     const features = policyFeatures[plan.policy_id] || []
@@ -682,11 +899,11 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
 
         <div className="mx-auto mt-8 max-w-5xl">
           <Tabs defaultValue="recommended">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="recommended">Recommended Plan</TabsTrigger>
-              <TabsTrigger value="policy-summary">Policy Summary</TabsTrigger>
-              <TabsTrigger value="scenarios">Scenario Learning</TabsTrigger>
-              <TabsTrigger value="risk-calculator">Risk Calculator</TabsTrigger>
+            <TabsList className="grid grid-cols-6 mb-4">
+              <TabsTrigger value="recommended">Recommended</TabsTrigger>
+              <TabsTrigger value="policy-summary">Summary</TabsTrigger>
+              <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
+              <TabsTrigger value="risk-calculator">Risk</TabsTrigger>
               <TabsTrigger value="red-flags">Red Flags</TabsTrigger>
               <TabsTrigger value="clause-map">Clause Map</TabsTrigger>
             </TabsList>
@@ -702,7 +919,7 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
                       </CardTitle>
                       <CardDescription className="text-base mt-1">{recommendedPlan.provider}</CardDescription>
                     </div>
-                    <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-sm">
                       {recommendedPlan.suitabilityScore}% Match
                     </div>
                   </div>
@@ -710,22 +927,22 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
                 <CardContent className="p-6">
                   <div className="grid gap-6 md:grid-cols-2">
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">Plan Details</h3>
-                      <div className="space-y-4">
+                      <h3 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Plan Details</h3>
+                      <div className="space-y-2.5">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Premium:</span>
+                          <span className="text-gray-600">Premium:</span>
                           <span className="font-bold">{recommendedPlan.premium}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Coverage:</span>
+                          <span className="text-gray-600">Coverage:</span>
                           <span className="font-bold">{recommendedPlan.coverage}</span>
                         </div>
-                        <div className="pt-4">
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">Key Features</h4>
-                          <ul className="space-y-2">
+                        <div className="mt-4">
+                          <h4 className="text-sm font-medium text-gray-600 mb-2">Key Features</h4>
+                          <ul className="text-sm space-y-2">
                             {recommendedPlan.keyFeatures.map((feature, index) => (
                               <li key={index} className="flex items-start gap-2">
-                                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                                 <span>{feature}</span>
                               </li>
                             ))}
@@ -734,36 +951,36 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">Why We Recommend This</h3>
+                      <h3 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Why We Recommend This</h3>
+                      
+                      <ul className="space-y-3 mb-5">
+                        {recommendedPlan.whyRecommended.map((reason, index) => (
+                          <li key={index} className="flex items-start gap-3 bg-blue-50 p-2.5 rounded-lg shadow-sm transition-all hover:shadow-md hover:bg-blue-100">
+                            <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-800">{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
                       
                       {/* Add radar chart for policy visualization */}
                       {recommendedPlans.length > 0 && (
-                        <div className="mb-4">
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                           <InsuranceRadarChart 
                             data={prepareRadarChartData(recommendedPlans[0])} 
                             title="Policy Performance Analysis"
                           />
-                          <p className="text-sm text-gray-500 mt-2 text-center">
-                            This spider diagram shows how the policy performs across key parameters. 
-                            Higher values (closer to the outer edge) indicate better performance.
+                          <p className="text-sm text-gray-600 mt-3 text-center italic">
+                            This visualization shows how the policy performs across key parameters. 
+                            <span className="block font-medium mt-1 text-blue-600">Higher values (closer to the outer edge) indicate better performance.</span>
                           </p>
                         </div>
                       )}
-                      
-                      <ul className="space-y-2 mt-4">
-                        {recommendedPlan.whyRecommended.map((reason, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                            <span>{reason}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
                   
                   {/* Alternative Plans - moved outside the main grid for better visibility */}
                   <div className="mt-8 pt-6 border-t">
-                    <h3 className="text-xl font-semibold mb-4">Alternative Plans</h3>
+                    <h3 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Alternative Plans</h3>
                     <div className="grid gap-6 md:grid-cols-2">
                       {alternativePlans.map((plan, index) => (
                         <Card key={index} className="border shadow-sm hover:shadow transition-shadow">
@@ -773,7 +990,7 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
                                 <CardTitle className="text-lg">{plan.name}</CardTitle>
                                 <CardDescription>{plan.provider}</CardDescription>
                               </div>
-                              <div className="text-sm bg-muted px-2 py-1 rounded-full">
+                              <div className="text-sm bg-blue-600 text-white px-2.5 py-1 rounded-full font-bold shadow-sm">
                                 {plan.suitabilityScore}% Match
                               </div>
                             </div>

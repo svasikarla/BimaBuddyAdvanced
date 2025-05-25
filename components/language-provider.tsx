@@ -26,7 +26,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // Simplified translations for demo purposes
 const translations: Record<Language, Record<string, string>> = {
   english: {
-    "hero.title": "Find the Right Health Insurance for You",
+    "hero.title": "Find the Red Flags in your present policy",
     "hero.subtitle": "Compare plans, understand benefits, and make informed decisions",
     "features.title": "Compare Health Insurance Features",
     "ayushman.title": "Ayushman Bharat - Pradhan Mantri Jan Arogya Yojana (PM-JAY)",

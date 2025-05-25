@@ -74,7 +74,7 @@ export function RedFlagHighlights({ policyData }: RedFlagHighlightsProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="multiple" defaultValue={flags.map((flag) => flag.id)} className="w-full">
                   {flags.map((flag, index) => (
                     <AccordionItem key={flag.id} value={flag.id}>
                       <AccordionTrigger className="text-left">

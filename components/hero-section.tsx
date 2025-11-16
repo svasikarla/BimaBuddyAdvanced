@@ -3,6 +3,7 @@
 import { useLanguage } from "./language-provider"
 import { GlassCard } from "./ui/glass-card"
 import { AIPlanMatcher } from "./ai-plan-matcher"
+import { AIBadge } from "./ui/ai-badge"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
@@ -56,17 +57,14 @@ export function HeroSection() {
             className="flex flex-col justify-center space-y-6"
           >
             <div className="space-y-5">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="inline-flex items-center px-3 py-1 rounded-full bg-blue-600/10 text-blue-600 text-sm font-medium mb-2"
               >
-                <span className="relative flex h-2 w-2 mr-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-600 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                </span>
-                AI-Powered Insurance Guidance
+                <AIBadge variant="primary" size="md" animated={true}>
+                  AI-Powered Insurance Guidance
+                </AIBadge>
               </motion.div>
               
               <motion.h1 

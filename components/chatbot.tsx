@@ -296,6 +296,35 @@ export function Chatbot() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Quick Reply Chips */}
+      {messages.length <= 2 && !isProcessing && (
+        <div className="px-4 pb-2 border-t pt-3">
+          <p className="text-xs text-gray-500 mb-2">Quick questions:</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Compare top 3 family plans",
+              "What's a waiting period?",
+              "Explain co-payment",
+              "Best plans for seniors",
+              "Claim rejection reasons"
+            ].map((reply, idx) => (
+              <motion.button
+                key={idx}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setInput(reply)
+                  setTimeout(() => handleSendMessage(), 100)
+                }}
+                className="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border border-blue-200 rounded-full text-gray-700 transition-all shadow-sm"
+              >
+                {reply}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="p-4 border-t">
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={toggleRecording} className={isRecording ? "bg-red-100" : ""}>

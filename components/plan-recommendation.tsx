@@ -14,6 +14,7 @@ import { VisualClauseMap } from "./policy-bare-open/visual-clause-map"
 import { InsuranceRadarChart, type InsuranceParameter } from "./policy-bare-open/insurance-radar-chart"
 import { getTopInsurancePlans, getPolicyFeatures, supabase } from "@/lib/supabase"
 import { PlanRecommendationSkeleton } from "@/components/ui/skeleton-loader"
+import { AIBadge } from "@/components/ui/ai-badge"
 import { motion } from "framer-motion"
 
 type FormData = {
@@ -910,6 +911,9 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
     <section className="w-full py-12 md:py-24 bg-white">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <AIBadge variant="accent" size="md" animated={true}>
+            AI-Recommended Plans
+          </AIBadge>
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
               Your Personalized Recommendation

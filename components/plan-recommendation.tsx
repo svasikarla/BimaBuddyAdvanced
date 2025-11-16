@@ -5,7 +5,7 @@ import { useLanguage } from "./language-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Check, Shield, Star } from "lucide-react"
+import { Check, Shield, Star, Sparkles } from "lucide-react"
 import { PolicySummary } from "./policy-bare-open/policy-summary"
 import { ScenarioBasedLearning } from "./policy-bare-open/scenario-based-learning"
 import { VisualRiskCalculator } from "./policy-bare-open/visual-risk-calculator"
@@ -13,6 +13,8 @@ import { RedFlagHighlights } from "./policy-bare-open/red-flag-highlights"
 import { VisualClauseMap } from "./policy-bare-open/visual-clause-map"
 import { InsuranceRadarChart, type InsuranceParameter } from "./policy-bare-open/insurance-radar-chart"
 import { getTopInsurancePlans, getPolicyFeatures, supabase } from "@/lib/supabase"
+import { PlanRecommendationSkeleton } from "@/components/ui/skeleton-loader"
+import { motion } from "framer-motion"
 
 type FormData = {
   age: string
@@ -867,16 +869,37 @@ export function PlanRecommendation({ formData, onReset }: PlanRecommendationProp
   // Show loading state while fetching data
   if (loading) {
     return (
-      <div className="w-full py-12 md:py-24 bg-white">
+      <div className="w-full py-12 md:py-24 bg-gradient-to-b from-blue-50 to-white">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Finding Your Best Plans</h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+          <div className="flex flex-col items-center justify-center space-y-8 text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium mb-4">
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="mr-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </motion.div>
+                AI is analyzing your requirements
+              </div>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                Finding Your Best Plans
+              </h2>
+              <p className="max-w-[700px] text-gray-600 md:text-xl">
                 Please wait while we analyze your preferences to find the perfect insurance plans for you...
               </p>
-            </div>
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </motion.div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+            <PlanRecommendationSkeleton />
+            <PlanRecommendationSkeleton />
+            <PlanRecommendationSkeleton />
           </div>
         </div>
       </div>

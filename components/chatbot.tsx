@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from "react"
 import ReactMarkdown from 'react-markdown'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mic, MicOff, Send } from "lucide-react"
+import { Mic, MicOff, Send, Sparkles, User, Copy, ThumbsUp, ThumbsDown } from "lucide-react"
 import { useLanguage } from "./language-provider"
 import { AudioPlayer } from "./audio-player"
+import { motion } from "framer-motion"
 
 type Message = {
   id: string
@@ -188,43 +189,89 @@ export function Chatbot() {
     }
   }
 
+  // Copy message to clipboard
+  const copyMessage = (text: string) => {
+    navigator.clipboard.writeText(text)
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
+        {messages.map((message, index) => (
+          <motion.div
+            key={message.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+          >
+            {/* Bot avatar */}
+            {message.sender === "bot" && (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+            )}
+
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                message.sender === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+              className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                message.sender === "user"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-tr-sm shadow-lg"
+                  : "bg-gray-100 text-gray-900 rounded-tl-sm shadow-md"
               }`}
             >
               {message.sender === "user" ? (
-                <p>{message.text}</p>
+                <p className="text-sm">{message.text}</p>
               ) : (
-                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:mt-2 prose-p:mb-2 first:prose-p:mt-0 last:prose-p:mb-0">
-                  <ReactMarkdown
-                    components={{
-                      // Example: customize how paragraphs are rendered
-                      p: ({node, ...props}) => <p className="my-2" {...props} />
-                    }}
-                  >
-                    {message.text}
-                  </ReactMarkdown>
-                </div>
+                <>
+                  <div className="prose prose-sm max-w-none prose-p:mt-2 prose-p:mb-2 first:prose-p:mt-0 last:prose-p:mb-0">
+                    <ReactMarkdown
+                      components={{
+                        p: ({node, ...props}) => <p className="my-2 text-gray-800" {...props} />
+                      }}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+                  </div>
+
+                  {/* Action buttons for bot messages */}
+                  <div className="flex gap-3 mt-3 pt-3 border-t border-gray-200">
+                    <button
+                      onClick={() => copyMessage(message.text)}
+                      className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+                    >
+                      <Copy className="h-3 w-3" /> Copy
+                    </button>
+                    <button className="text-xs text-gray-500 hover:text-green-600 flex items-center gap-1 transition-colors">
+                      <ThumbsUp className="h-3 w-3" /> Helpful
+                    </button>
+                    <button className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors">
+                      <ThumbsDown className="h-3 w-3" /> Not Helpful
+                    </button>
+                  </div>
+                </>
               )}
-              <p className="text-xs opacity-70 mt-1">
+
+              <p className="text-xs opacity-60 mt-2">
                 {message.timestamp.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </p>
+
               {message.sender === "bot" && message.audioData && (
                 <div className="mt-2">
                   <AudioPlayer audioSrc={message.audioData} />
                 </div>
               )}
             </div>
-          </div>
+
+            {/* User avatar */}
+            {message.sender === "user" && (
+              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <User className="h-5 w-5 text-gray-600" />
+              </div>
+            )}
+          </motion.div>
         ))}
         {isProcessing && (
           <div className="flex justify-start">

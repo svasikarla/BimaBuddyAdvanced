@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, AlertTriangle, Info } from "lucide-react"
+import { AlertCircle, AlertTriangle, Info, FileX } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { supabase } from "@/lib/supabase"
 import { getPolicyFeatures } from "@/lib/supabase"
+import { PolicyCardSkeleton } from "@/components/ui/skeleton-loader"
+import { EmptyState } from "@/components/ui/empty-state"
 
 type InsurancePlan = {
   policy_id: string
@@ -413,16 +415,23 @@ export function AllPoliciesRedFlags() {
           </div>
           
           {loading ? (
-            <div className="flex justify-center items-center py-10">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <PolicyCardSkeleton />
+              <PolicyCardSkeleton />
+              <PolicyCardSkeleton />
+              <PolicyCardSkeleton />
             </div>
           ) : (
             Object.keys(selectedPolicyRedFlags).length > 0 ? (
               <CustomRedFlagHighlights policyData={selectedPolicyRedFlags} />
             ) : (
-              <div className="text-center py-10 text-gray-500">
-                No policy data available. Please select a different policy.
-              </div>
+              <EmptyState
+                icon={FileX}
+                title="No Policy Data Available"
+                description="We couldn't find any red flags for this policy. Try selecting a different policy from the list above."
+                actionLabel="Refresh"
+                onAction={() => window.location.reload()}
+              />
             )
           )}
         </CardContent>

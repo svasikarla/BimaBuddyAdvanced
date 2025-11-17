@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Home, Search, FileText, Calculator, BarChart3 } from "lucide-react"
+import { Home, Search, FileText, Activity, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -10,8 +10,8 @@ const navItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/find-best-plan", icon: Search, label: "Find Plan" },
   { href: "/compare-plans", icon: FileText, label: "Compare" },
+  { href: "/wellness", icon: Activity, label: "Wellness" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
-  { href: "/claim-rejection-predictor", icon: Calculator, label: "Predictor" },
 ]
 
 export function MobileBottomNav() {

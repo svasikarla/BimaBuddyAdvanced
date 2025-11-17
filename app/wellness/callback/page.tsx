@@ -5,14 +5,14 @@
  * Handles OAuth redirect from Terra after user connects their device
  */
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-export default function WellnessCallbackPage() {
+function CallbackContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -140,5 +140,24 @@ export default function WellnessCallbackPage() {
         </Card>
       </motion.div>
     </div>
+  )
+}
+
+export default function WellnessCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <Loader2 className="h-16 w-16 text-primary animate-spin" />
+            </div>
+            <CardTitle>Loading...</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
   )
 }

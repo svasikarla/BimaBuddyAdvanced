@@ -23,18 +23,81 @@ type LanguageContextType = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-// Simplified translations for demo purposes
+// Comprehensive translations
 const translations: Record<Language, Record<string, string>> = {
   english: {
+    // Hero Section
     "hero.title": "Find the Red Flags in your present policy",
     "hero.subtitle": "Compare plans, understand benefits, and make informed decisions",
+
+    // Navigation
+    "nav.home": "Home",
+    "nav.findPlan": "Find Best Plan",
+    "nav.compare": "Compare Plans",
+    "nav.analytics": "Analytics",
+    "nav.school": "Policy School",
+    "nav.predictor": "Claim Predictor",
+    "nav.allPolicies": "All Policies",
+
+    // Common Actions
+    "action.viewDetails": "View Details",
+    "action.compare": "Compare",
+    "action.getStarted": "Get Started",
+    "action.learnMore": "Learn More",
+    "action.submit": "Submit",
+    "action.next": "Next",
+    "action.previous": "Previous",
+    "action.cancel": "Cancel",
+    "action.save": "Save",
+    "action.download": "Download",
+    "action.share": "Share",
+    "action.reset": "Reset",
+
+    // Features
     "features.title": "Compare Health Insurance Features",
+    "features.coverage": "Coverage",
+    "features.premium": "Premium",
+    "features.network": "Network Hospitals",
+    "features.claim": "Claim Settlement",
+
+    // Ayushman Bharat
     "ayushman.title": "Ayushman Bharat - Pradhan Mantri Jan Arogya Yojana (PM-JAY)",
-    "ayushman.description":
-      "A flagship scheme of Government of India that provides free access to health insurance coverage for low income earners in the country.",
+    "ayushman.description": "A flagship scheme of Government of India that provides free access to health insurance coverage for low income earners in the country.",
+
+    // Chat
     "chat.start": "Chat with us",
+    "chat.placeholder": "Type your message...",
+    "chat.greeting": "Hello! How can I help you today?",
+
+    // Forms
+    "form.age": "Age",
+    "form.name": "Name",
+    "form.email": "Email",
+    "form.phone": "Phone Number",
+    "form.city": "City",
+    "form.pincode": "PIN Code",
+    "form.familyMembers": "Family Members",
+    "form.preExisting": "Pre-existing Conditions",
+    "form.required": "This field is required",
+
+    // Messages
+    "message.success": "Success!",
+    "message.error": "Error occurred",
+    "message.loading": "Loading...",
+    "message.noResults": "No results found",
+    "message.tryAgain": "Please try again",
+
+    // Analytics
+    "analytics.dashboard": "Analytics Dashboard",
+    "analytics.premium": "Premium Analysis",
+    "analytics.trends": "Trends",
+    "analytics.comparison": "Comparison",
+
+    // Misc
     language: "Language",
-    // Add more translations as needed
+    "currency": "₹",
+    "perYear": "per year",
+    "perMonth": "per month",
   },
   hindi: {
     "hero.title": "आपके लिए सही स्वास्थ्य बीमा खोजें",

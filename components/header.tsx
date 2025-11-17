@@ -39,7 +39,7 @@ export function Header() {
     { title: "Analytics", href: "/analytics" },
     { title: "Wellness", href: "/wellness" },
     { title: "Policy School", href: "/policy-school" },
-    { title: "Claim Predictor", href: "/claim-rejection-predictor" },
+    { title: "Claim Intelligence", href: "/claim-intelligence" },
   ]
 
   return (

@@ -13,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { PlanRecommendation } from "./plan-recommendation"
+import { CheckCircle2, AlertCircle } from "lucide-react"
+import { motion } from "framer-motion"
+import { toast } from "sonner"
 
 type FormData = {
   age: string
@@ -40,6 +43,20 @@ export function RecommendationForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [showResults, setShowResults] = useState(false)
 
+  // Validation functions
+  const isAgeValid = (age: string) => {
+    const ageNum = parseInt(age)
+    return age !== "" && !isNaN(ageNum) && ageNum >= 18 && ageNum <= 100
+  }
+
+  const isStep1Valid = () => {
+    return isAgeValid(formData.age) && formData.location !== ""
+  }
+
+  const isStep2Valid = () => {
+    return formData.familySize !== ""
+  }
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
@@ -47,8 +64,23 @@ export function RecommendationForm() {
   const handleNextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1)
+      toast.success(`Step ${currentStep} completed!`, {
+        description: "Moving to the next step..."
+      })
     } else {
-      setShowResults(true)
+      toast.promise(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            setShowResults(true)
+            resolve(true)
+          }, 500)
+        }),
+        {
+          loading: 'Finding your perfect plans...',
+          success: 'Plans found! Analyzing recommendations...',
+          error: 'Something went wrong'
+        }
+      )
     }
   }
 
@@ -84,19 +116,58 @@ export function RecommendationForm() {
           <div className="mx-auto -mt-10 max-w-3xl px-6 pb-10">
             <Card className="shadow-2xl border-0">
               <CardHeader className="p-6 pb-4">
-                <div className="flex justify-between items-center">
+                <div className="space-y-4">
                   <CardTitle className="text-xl font-bold text-gray-800">Step {currentStep} of 3</CardTitle>
-                  <div className="flex space-x-3">
-                    <span className={`h-3 w-16 rounded-full transition-all duration-300 ${currentStep >= 1 ? "bg-blue-600" : "bg-gray-200"}`}></span>
-                    <span className={`h-3 w-16 rounded-full transition-all duration-300 ${currentStep >= 2 ? "bg-blue-600" : "bg-gray-200"}`}></span>
-                    <span className={`h-3 w-16 rounded-full transition-all duration-300 ${currentStep >= 3 ? "bg-blue-600" : "bg-gray-200"}`}></span>
+
+                  {/* Animated Step Progress */}
+                  <div className="flex items-center justify-between">
+                    {[1, 2, 3].map((stepNumber) => (
+                      <div key={stepNumber} className="flex items-center flex-1">
+                        <motion.div
+                          initial={false}
+                          animate={{
+                            backgroundColor: stepNumber < currentStep ? "#10B981" :
+                                            stepNumber === currentStep ? "#3B82F6" : "#E5E7EB",
+                            scale: stepNumber === currentStep ? 1.1 : 1
+                          }}
+                          transition={{ duration: 0.3 }}
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow-lg relative z-10"
+                        >
+                          {stepNumber < currentStep ? (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 200 }}
+                            >
+                              <CheckCircle2 className="h-6 w-6" />
+                            </motion.div>
+                          ) : (
+                            stepNumber
+                          )}
+                        </motion.div>
+                        {stepNumber < 3 && (
+                          <div className="flex-1 h-1 mx-2">
+                            <motion.div
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: stepNumber < currentStep ? 1 : 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="h-full bg-green-500 origin-left"
+                            />
+                            {stepNumber >= currentStep && (
+                              <div className="h-full bg-gray-200 -mt-1" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
+
+                  <CardDescription className="text-base font-medium text-gray-600">
+                    {currentStep === 1 && "Tell us about yourself"}
+                    {currentStep === 2 && "Family and health information"}
+                    {currentStep === 3 && "Coverage preferences"}
+                  </CardDescription>
                 </div>
-                <CardDescription className="text-base mt-2 font-medium text-gray-600">
-                  {currentStep === 1 && "Tell us about yourself"}
-                  {currentStep === 2 && "Family and health information"}
-                  {currentStep === 3 && "Coverage preferences"}
-                </CardDescription>
               </CardHeader>
               <CardContent className="p-6 pt-2">
                 <form>
@@ -105,13 +176,44 @@ export function RecommendationForm() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="age" className="text-gray-700 font-medium">Age</Label>
-                          <Input
-                            id="age"
-                            placeholder="Enter your age"
-                            value={formData.age}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("age", e.target.value)}
-                            className="border-2 border-gray-300 focus:border-blue-500 rounded-lg px-4 py-2 transition-colors"
-                          />
+                          <div className="relative">
+                            <Input
+                              id="age"
+                              type="number"
+                              placeholder="Enter your age"
+                              value={formData.age}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("age", e.target.value)}
+                              className={`border-2 rounded-lg px-4 py-2 pr-10 transition-all ${
+                                formData.age === ""
+                                  ? "border-gray-300 focus:border-blue-500"
+                                  : isAgeValid(formData.age)
+                                  ? "border-green-500 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                                  : "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                              }`}
+                            />
+                            {formData.age && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                              >
+                                {isAgeValid(formData.age) ? (
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-5 w-5 text-red-500" />
+                                )}
+                              </motion.div>
+                            )}
+                          </div>
+                          {formData.age && !isAgeValid(formData.age) && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-600 mt-1"
+                            >
+                              Please enter an age between 18 and 100
+                            </motion.p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-gray-700 font-medium">Gender</Label>
@@ -287,10 +389,14 @@ export function RecommendationForm() {
                     ) : (
                       <div></div>
                     )}
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       onClick={handleNextStep}
-                      className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors shadow-md"
+                      disabled={
+                        (currentStep === 1 && !isStep1Valid()) ||
+                        (currentStep === 2 && !isStep2Valid())
+                      }
+                      className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {currentStep < 3 ? (
                         <>

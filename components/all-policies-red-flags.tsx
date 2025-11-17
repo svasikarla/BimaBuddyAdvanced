@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase"
 import { getPolicyFeatures } from "@/lib/supabase"
 import { PolicyCardSkeleton } from "@/components/ui/skeleton-loader"
 import { EmptyState } from "@/components/ui/empty-state"
+import { motion } from "framer-motion"
+import { useScrollAnimation, fadeInUp } from "@/hooks/use-scroll-animation"
 
 type InsurancePlan = {
   policy_id: string

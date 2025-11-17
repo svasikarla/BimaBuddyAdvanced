@@ -88,3 +88,72 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Accessibility: Focus-visible styles for keyboard navigation */
+@layer base {
+  /* Remove default outline and add custom focus styles */
+  *:focus {
+    @apply outline-none;
+  }
+
+  /* Enhanced focus-visible for all interactive elements */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-600 rounded-sm;
+  }
+
+  /* Button focus styles */
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    @apply ring-2 ring-blue-600 ring-offset-2;
+  }
+
+  /* Link focus styles */
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-600 rounded-sm;
+  }
+
+  /* Input focus styles */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply ring-2 ring-blue-500 border-blue-500;
+  }
+
+  /* Radio and checkbox focus styles */
+  input[type="radio"]:focus-visible,
+  input[type="checkbox"]:focus-visible {
+    @apply ring-2 ring-blue-600 ring-offset-2;
+  }
+
+  /* Card and interactive card focus styles */
+  [role="article"]:focus-visible,
+  [role="region"]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-600;
+  }
+
+  /* Slider focus styles */
+  [role="slider"]:focus-visible {
+    @apply ring-4 ring-blue-600 ring-offset-2;
+  }
+
+  /* Dialog/Modal focus styles */
+  [role="dialog"]:focus-visible {
+    @apply outline-none;
+  }
+
+  /* Menu items focus styles */
+  [role="menuitem"]:focus-visible,
+  [role="option"]:focus-visible {
+    @apply bg-blue-100 outline-none;
+  }
+}
+
+/* Skip to content link for keyboard navigation */
+@layer components {
+  .skip-to-content {
+    @apply absolute left-0 top-0 bg-blue-600 text-white px-4 py-2 rounded-br-lg;
+    @apply transform -translate-y-full focus:translate-y-0;
+    @apply transition-transform duration-200;
+    @apply z-50;
+  }
+}

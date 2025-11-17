@@ -21,7 +21,8 @@ BimaBuddy Advanced is a comprehensive health insurance comparison platform for I
 ```
 /app
   ├── page.tsx                          # Homepage
-  ├── layout.tsx                        # Root layout
+  ├── layout.tsx                        # Root layout with error boundary
+  ├── analytics/                        # Analytics dashboard (NEW)
   ├── ayushman-bharat/                  # Ayushman Bharat scheme info
   ├── find-best-plan/                   # Plan recommendation wizard
   ├── policy-bare-open/                 # Policy comparison tools
@@ -35,21 +36,104 @@ BimaBuddy Advanced is a comprehensive health insurance comparison platform for I
       ├── openai/route.ts               # OpenAI integration
       └── elevenlabs/route.ts           # Voice agent API
 
-/components                             # Reusable UI components
-/hooks                                  # Custom React hooks
-/lib                                    # Utility functions and configs
+/components
+  ├── charts/                           # Data visualization components (NEW)
+  │   ├── premium-comparison-chart.tsx  # Bar chart for premium comparison
+  │   ├── coverage-breakdown-chart.tsx  # Donut chart for coverage
+  │   ├── premium-trend-chart.tsx       # Line/Area chart for trends
+  │   └── policy-radar-chart.tsx        # Spider chart for features
+  ├── ui/                               # UI components
+  │   ├── ai-badge.tsx                  # AI feature indicator (NEW)
+  │   ├── skeleton-loader.tsx           # Loading states (NEW)
+  │   ├── empty-state.tsx               # Empty state component (NEW)
+  │   ├── success-celebration.tsx       # Confetti animation (NEW)
+  │   ├── interactive-card.tsx          # Animated card (NEW)
+  │   ├── enhanced-policy-card.tsx      # Advanced policy card (NEW)
+  │   ├── animated-comparison.tsx       # Comparison table (NEW)
+  │   ├── animated-risk-meter.tsx       # Circular progress meter (NEW)
+  │   ├── typing-effect.tsx             # Typing animation (NEW)
+  │   └── optimized-image.tsx           # Lazy-loaded images (NEW)
+  ├── page-transition.tsx               # Page animations (NEW)
+  ├── mobile-bottom-nav.tsx             # Mobile navigation (NEW)
+  ├── error-boundary.tsx                # Error handling (NEW)
+  └── analytics-dashboard.tsx           # Analytics dashboard (NEW)
+
+/hooks
+  ├── use-scroll-animation.ts           # Scroll-triggered animations (NEW)
+  ├── use-reduced-motion.ts             # Accessibility hook (NEW)
+  └── use-api.ts                        # Data fetching hooks (NEW)
+
+/lib
+  ├── performance.ts                    # Performance utilities (NEW)
+  ├── language-utils.ts                 # i18n formatting (NEW)
+  ├── api.ts                            # API client with retry (NEW)
+  └── error-handler.ts                  # Error handling (NEW)
+
 /public                                 # Static assets
 /styles                                 # Global styles
 ```
 
 ## Key Features
 
+### Core Features
 1. **Policy Comparison**: Side-by-side comparison of health insurance policies
-2. **AI Chatbot**: OpenAI-powered assistant for insurance queries
+2. **AI Chatbot**: OpenAI-powered assistant with quick reply chips and actions
 3. **Voice Agent**: ElevenLabs integration for voice interactions
-4. **Multilingual**: Support for 10+ Indian languages
-5. **Claim Predictor**: ML-based claim rejection prediction
+4. **Multilingual**: Support for 10 Indian languages with formatting utilities
+5. **Claim Predictor**: ML-based claim rejection prediction with animated risk meter
 6. **Educational Content**: Policy school for insurance literacy
+
+### New Advanced Features (Phases 4-8)
+
+#### Data Visualization & Analytics
+- **Analytics Dashboard**: Comprehensive dashboard with 4 interactive tabs
+- **Premium Comparison Charts**: Bar charts comparing policies
+- **Coverage Breakdown**: Donut charts showing coverage distribution
+- **Trend Analysis**: Line/Area charts for age-based premium trends
+- **Feature Comparison**: Radar charts comparing policy features
+- **AI-Powered Insights**: Automated recommendations and analysis
+
+#### UI/UX Enhancements
+- **Page Transitions**: Smooth animations between pages
+- **Micro-interactions**: Hover effects, tap animations on cards
+- **Loading States**: 5+ skeleton loader variants
+- **Empty States**: User-friendly no-data displays
+- **Success Celebrations**: Confetti animations for positive outcomes
+- **Animated Risk Meter**: Circular progress with color coding
+- **Typing Effects**: Character-by-character animations
+
+#### Mobile Experience
+- **Bottom Navigation**: 5-item mobile nav with scroll behavior
+- **Touch Optimizations**: 44x44px tap targets
+- **Responsive Design**: Mobile-first utility classes
+- **Safe Area Support**: iOS notch compatibility
+
+#### Accessibility
+- **Focus-Visible Styles**: Enhanced keyboard navigation
+- **Skip-to-Content**: Screen reader support
+- **Reduced Motion**: Respects user preferences
+- **Error Boundaries**: Graceful error recovery
+
+#### Performance
+- **Lazy Loading**: Intersection Observer for images
+- **Animation Quality**: Device-based optimization
+- **Web Vitals Monitoring**: CLS, FID, FCP, LCP, TTFB tracking
+- **Request Idle Callback**: Non-critical task scheduling
+
+#### API & Data Management
+- **Automatic Retry**: Exponential backoff on failures
+- **In-Memory Cache**: 5-minute TTL, pattern-based clearing
+- **Custom Hooks**: useAPI, useMutation, usePagination
+- **Error Handling**: Typed errors with user-friendly messages
+- **Form Validation**: 8+ common validators
+
+#### Multilingual Support
+- **47+ Translation Keys**: Navigation, actions, forms, messages
+- **Currency Formatting**: Indian numbering (₹, lakhs, crores)
+- **Date Formatting**: Locale-aware (10 Indian languages)
+- **Phone Formatting**: +91 XXXXX XXXXX
+- **PIN Validation**: 6-digit Indian format
+- **Time-based Greetings**: Context-aware by language
 
 ## Environment Setup
 

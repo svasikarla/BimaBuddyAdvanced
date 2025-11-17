@@ -13,11 +13,15 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertCircle, CheckCircle, Upload, FileText, AlertTriangle, Info } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { AnimatedRiskMeter } from "@/components/ui/animated-risk-meter"
+import { SuccessCelebration } from "@/components/ui/success-celebration"
+import { toast } from "sonner"
 
 export function ClaimRejectionPredictor() {
   const [step, setStep] = useState(1)
   const [policyUploaded, setPolicyUploaded] = useState(false)
   const [policyName, setPolicyName] = useState("")
+  const [showCelebration, setShowCelebration] = useState(false)
   const [formData, setFormData] = useState({
     patientAge: 35,
     patientGender: "male",
@@ -176,6 +180,28 @@ export function ClaimRejectionPredictor() {
     })
 
     setStep(3)
+
+    // Show celebration for low risk
+    if (rejectionProbability < 30) {
+      setTimeout(() => {
+        setShowCelebration(true)
+      }, 2000)
+    }
+
+    // Show toast notification
+    if (rejectionProbability < 30) {
+      toast.success("Great News!", {
+        description: "Your claim has a low risk of rejection!"
+      })
+    } else if (rejectionProbability < 70) {
+      toast.warning("Medium Risk Detected", {
+        description: "Review the recommendations to improve your claim."
+      })
+    } else {
+      toast.error("High Risk Detected", {
+        description: "Please review the factors affecting your claim."
+      })
+    }
   }
 
   return (
@@ -417,62 +443,8 @@ export function ClaimRejectionPredictor() {
 
                   {step === 3 && predictionResult && (
                     <div className="space-y-6">
-                      <div className="flex flex-col items-center justify-center p-6">
-                        <div className="relative w-48 h-48">
-                          <svg viewBox="0 0 100 100" className="w-full h-full">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                            <circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              fill="none"
-                              stroke={
-                                predictionResult.rejectionProbability < 30
-                                  ? "#22c55e"
-                                  : predictionResult.rejectionProbability < 70
-                                    ? "#f59e0b"
-                                    : "#ef4444"
-                              }
-                              strokeWidth="10"
-                              strokeDasharray={`${predictionResult.rejectionProbability * 2.83} 283`}
-                              strokeDashoffset="0"
-                              transform="rotate(-90 50 50)"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="text-3xl font-bold">{predictionResult.rejectionProbability}%</div>
-                              <div className="text-sm mt-1">Rejection Risk</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          className={`mt-6 flex items-center gap-2 text-lg font-semibold ${
-                            predictionResult.rejectionProbability < 30
-                              ? "text-green-600"
-                              : predictionResult.rejectionProbability < 70
-                                ? "text-amber-600"
-                                : "text-red-600"
-                          }`}
-                        >
-                          {predictionResult.rejectionProbability < 30 ? (
-                            <>
-                              <CheckCircle className="h-6 w-6" />
-                              <span>Low Risk of Rejection</span>
-                            </>
-                          ) : predictionResult.rejectionProbability < 70 ? (
-                            <>
-                              <AlertTriangle className="h-6 w-6" />
-                              <span>Medium Risk of Rejection</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertCircle className="h-6 w-6" />
-                              <span>High Risk of Rejection</span>
-                            </>
-                          )}
-                        </div>
+                      <div className="p-6">
+                        <AnimatedRiskMeter probability={predictionResult.rejectionProbability} />
                       </div>
 
                       <div className="border-t pt-6">
@@ -682,6 +654,13 @@ export function ClaimRejectionPredictor() {
           </Tabs>
         </div>
       </div>
+
+      {/* Success Celebration for low risk */}
+      <SuccessCelebration
+        show={showCelebration}
+        message="Your claim has a low risk of rejection! You're well protected."
+        onComplete={() => setShowCelebration(false)}
+      />
     </section>
   )
 }

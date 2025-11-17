@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { PlanRecommendation } from "./plan-recommendation"
 import { CheckCircle2, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { toast } from "sonner"
 
 type FormData = {
   age: string
@@ -63,8 +64,23 @@ export function RecommendationForm() {
   const handleNextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1)
+      toast.success(`Step ${currentStep} completed!`, {
+        description: "Moving to the next step..."
+      })
     } else {
-      setShowResults(true)
+      toast.promise(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            setShowResults(true)
+            resolve(true)
+          }, 500)
+        }),
+        {
+          loading: 'Finding your perfect plans...',
+          success: 'Plans found! Analyzing recommendations...',
+          error: 'Something went wrong'
+        }
+      )
     }
   }
 

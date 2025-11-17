@@ -36,6 +36,7 @@ export function Header() {
     { title: "Home", href: "/" },
     { title: "Find Best Plan", href: "/find-best-plan" },
     { title: "Compare Plans", href: "/compare-plans" },
+    { title: "Analytics", href: "/analytics" },
     { title: "Policy School", href: "/policy-school" },
     { title: "Claim Predictor", href: "/claim-rejection-predictor" },
   ]

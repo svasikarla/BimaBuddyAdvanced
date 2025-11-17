@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Home, Search, FileText, Brain, Activity } from "lucide-react"
+import { Home, Search, FileText, Mic, Activity } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -11,7 +11,7 @@ const navItems = [
   { href: "/find-best-plan", icon: Search, label: "Find Plan" },
   { href: "/compare-plans", icon: FileText, label: "Compare" },
   { href: "/wellness", icon: Activity, label: "Wellness" },
-  { href: "/claim-intelligence", icon: Brain, label: "Claims" },
+  { href: "/voice-assistant", icon: Mic, label: "Voice" },
 ]
 
 export function MobileBottomNav() {

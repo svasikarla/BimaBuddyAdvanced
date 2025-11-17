@@ -38,6 +38,7 @@ export function Header() {
     { title: "Compare Plans", href: "/compare-plans" },
     { title: "Analytics", href: "/analytics" },
     { title: "Wellness", href: "/wellness" },
+    { title: "Voice Assistant", href: "/voice-assistant" },
     { title: "Policy School", href: "/policy-school" },
     { title: "Claim Intelligence", href: "/claim-intelligence" },
   ]

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PremiumComparisonChart } from "@/components/charts/premium-comparison-chart"
@@ -8,10 +8,29 @@ import { CoverageBreakdownChart } from "@/components/charts/coverage-breakdown-c
 import { PremiumTrendChart } from "@/components/charts/premium-trend-chart"
 import { PolicyRadarChart } from "@/components/charts/policy-radar-chart"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, TrendingUp, Users, Shield, IndianRupee } from "lucide-react"
+import { BarChart3, TrendingUp, Users, Shield, IndianRupee, Loader2, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-// Sample data for demonstration
-const premiumComparisonData = [
+interface AnalyticsData {
+  summary: {
+    totalPolicies: number
+    avgPremium: number
+    avgCoverage: number
+    avgCSR: number
+  }
+  topPolicies: {
+    byPopularity: Array<{name: string; company: string; premium: number; coverage: number; csr: number; score: number}>
+    byCSR: Array<{name: string; company: string; csr: number; premium: number}>
+    byValue: Array<{name: string; company: string; premium: number; coverage: number; valueRatio: string}>
+  }
+  premiumByType: Array<{type: string; avgPremium: number; count: number}>
+  premiumTrends: Array<{age: number; avgPremium: number}>
+  coverageBreakdown: Array<{category: string; percentage: number}>
+  companies: Array<{name: string; csr: number; hospitals: number; rating: number}>
+}
+
+// Fallback data for demonstration
+const fallbackPremiumData = [
   { name: "Star Health Premier", premium: 18500, coverage: 10, recommended: true },
   { name: "Care Supreme", premium: 15200, coverage: 5 },
   { name: "HDFC Optima Secure", premium: 22000, coverage: 15 },
@@ -50,23 +69,110 @@ const radarComparisonData = [
 
 export function AnalyticsDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
+  const [data, setData] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Calculate key metrics
-  const totalPoliciesCompared = premiumComparisonData.length
-  const avgPremium = Math.round(
-    premiumComparisonData.reduce((acc, p) => acc + p.premium, 0) / premiumComparisonData.length
+  useEffect(() => {
+    fetchAnalyticsData()
+  }, [])
+
+  async function fetchAnalyticsData() {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/analytics')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data')
+      }
+
+      const result = await response.json()
+      setData(result)
+      setError(null)
+    } catch (err: any) {
+      console.error('Error fetching analytics:', err)
+      setError(err.message)
+      // Use fallback/mock data on error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Calculate key metrics from real data or fallback
+  const totalPoliciesCompared = data?.summary.totalPolicies || fallbackPremiumData.length
+  const avgPremium = data?.summary.avgPremium || Math.round(
+    fallbackPremiumData.reduce((acc, p) => acc + p.premium, 0) / fallbackPremiumData.length
   )
-  const avgCoverage = (
-    premiumComparisonData.reduce((acc, p) => acc + p.coverage, 0) / premiumComparisonData.length
-  ).toFixed(1)
+  const avgCoverage = data?.summary.avgCoverage || parseFloat((
+    fallbackPremiumData.reduce((acc, p) => acc + p.coverage, 0) / fallbackPremiumData.length
+  ).toFixed(1))
+
+  const premiumComparisonData = data?.topPolicies.byPopularity.map(p => ({
+    name: p.name,
+    premium: p.premium,
+    coverage: p.coverage,
+    recommended: p.score > 90
+  })) || fallbackPremiumData
+
   const bestValue = premiumComparisonData.reduce((best, current) => {
     const bestRatio = best.coverage / (best.premium / 10000)
     const currentRatio = current.coverage / (current.premium / 10000)
     return currentRatio > bestRatio ? current : best
   })
 
+  const coverageBreakdownData = data?.coverageBreakdown.map((item, idx) => ({
+    name: item.category,
+    value: item.percentage / 10, // Convert percentage to value
+    color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'][idx % 6]
+  })) || [
+    { name: "Hospitalization", value: 5, color: "#3b82f6" },
+    { name: "Pre & Post Hospitalization", value: 1.5, color: "#10b981" },
+    { name: "Day Care Procedures", value: 1, color: "#f59e0b" },
+    { name: "Ambulance", value: 0.5, color: "#ef4444" },
+    { name: "Home Care Treatment", value: 1, color: "#8b5cf6" },
+    { name: "Organ Donor Expenses", value: 1, color: "#ec4899" }
+  ]
+
+  const premiumTrendData = data?.premiumTrends || radarComparisonData
+
+  if (loading) {
+    return (
+      <div className="container px-4 md:px-6 py-8 flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto" />
+          <p className="text-lg text-gray-600">Loading analytics data...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container px-4 md:px-6 py-8 space-y-8">
+      {/* Header with Refresh */}
+      {data && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">Live Analytics Dashboard</h3>
+            <p className="text-sm text-gray-600 mt-1">Real-time data from {data.summary.totalPolicies} insurance policies</p>
+          </div>
+          <Button
+            onClick={fetchAnalyticsData}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+          <p><strong>Notice:</strong> Could not load live data. Showing sample data instead.</p>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div

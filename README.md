@@ -1,59 +1,41 @@
-# Health Insurance India
+# BimaBuddyAdvanced
 
-A comprehensive platform for comparing and understanding health insurance policies in India.
+🛡️ **Insurance Product Suite with Competitive Market Analysis**
 
-## Features
+A production-grade insurance platform demonstrating SaaS architecture, market research integration, and competitive intelligence.
 
-- Compare health insurance policies
-- Understand policy terms and conditions
-- Visual policy analysis
-- Multilingual support
-- AI-powered chatbot for insurance guidance
+## ✨ Key Features
 
-## Setup
+- 📊 Competitive Insurance Market Analysis
+- 💳 Insurance Product Recommendations
+- 📈 Market Trend Analysis
+- 🚀 Full-Stack SaaS Architecture
+- 🔐 Production-Ready Security
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Set up environment variables:
-   - Create a `.env.local` file in the root directory
-   - Add the following variables:
-     ```
-     # Supabase Configuration
-     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+## 🚀 Live Demo
 
-     # OpenAI Configuration
-     OPENAI_API_KEY=your_openai_api_key
-     ```
-   - Replace `your_openai_api_key` with your actual OpenAI API key
-   - Replace Supabase credentials if needed
+[Visit BimaBuddy Advanced](https://bima-buddy-advanced.vercel.app)
 
-4. Run the development server:
-   ```
-   npm run dev
-   ```
+## 🛠️ Tech Stack
 
-## Chatbot
+- **Frontend**: Next.js, TypeScript, React
+- **Backend**: Supabase (PostgreSQL)
+- **Real-time**: Supabase Realtime
+- **Deployment**: Vercel (41 deployments)
 
-The platform includes an AI-powered chatbot that:
-- Provides information about health insurance policies
-- Explains complex terms and conditions
-- Responds in the user's selected language
-- Uses OpenAI's API for intelligent responses
+## 📊 Project Stats
 
-## Multilingual Support
+- **49 Commits** | **41 Deployments** | Most Active Project
+- **Competitive Analysis Docs**: COMPETITIVE_ANALYSIS.md
+- **Implementation Guide**: IMPLEMENTATION_SUMMARY.md
 
-The application supports multiple Indian languages:
-- English
-- Hindi
-- Tamil
-- Telugu
-- Bengali
-- Marathi
-- Gujarati
-- Kannada
-- Malayalam
-- Punjabi
+## 🎯 Market Focus
+
+- Indian insurance market
+- Product comparison engine
+- Automated market research
+- Competitive pricing analysis
+
+---
+
+*Building next-generation insurance products*
